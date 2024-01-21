@@ -75,7 +75,6 @@ paths:
           description: Forbidden
         '404':
           description: User not found
-    # documentation for PUT operation for this path
     post:
       tags:
         - User
@@ -113,7 +112,7 @@ paths:
   /wordle/game: # path parameter in curly braces
     post: # documentation for POST operation for this path
       tags:
-        - Echo
+        - Game
       summary: Echo test
       description: Receive the exact message you've sent
       operationId: echo
@@ -162,7 +161,7 @@ paths:
   /wordle/game/{game_id}/attempt:
     post:
       tags:
-        - Echo
+        - Game
       summary: Echo test
       description: Receive the exact message you've sent
       operationId: echo

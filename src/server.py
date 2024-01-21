@@ -1,11 +1,11 @@
 """Wordle server logic"""
-import flask as flask
 import logging 
+
+import flask as flask
 import marshmallow
-import http
+
 import impl.game as game
 import impl.user as user
-
 import schemas as schemas
 
 logger = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ GameImpl = game.GameImpl
 UserImpl = user.UserImpl
 
 CreateGameRequestSchema = schemas.CreateGameRequestSchema
-CreateGameResponseSchema = schemas.CreateGameRequestSchema
+CreateGameResponseSchema = schemas.CreateGameResponseSchema
 PostAnswerRequestSchema = schemas.PostAnswerRequestSchema
 PostAnswerResponseSchema = schemas.PostAnswerResponseSchema
 GetGameResponseSchema = schemas.GetGameResponseSchema
@@ -49,9 +49,19 @@ def get_user_info(user_id: str):
 
    return response, 200
 
+@app.route('/v1/wordle/user/<user_id>', methods=['GET'])
+def get_games_by_user(user_id: str):
+   logger.info("Request made to GET 'wordle/%s'", user_id)
+   user_info = UserImpl.get_user_info(user_id)
+
+   payload = user_info.to_dict()
+
+   response = GetUserResponseSchema.dumps(payload)
+
+   return response, 200
 
 @app.route('/v1/wordle/game', methods=['POST'])
-def create_game(game_id):
+def create_game():
    """POST to create a new Wordle Game"""
 
    logger.info("Request made to POST 'wordle/")
@@ -63,11 +73,11 @@ def create_game(game_id):
       return "Invalid request payload", 400 
 
    user_name = data.get('user_name')
-   answer_letters = data.get('answer_letters')
+   answer_length = data.get('answer_length')
 
    new_game = GameImpl.create_game(
       user_name=user_name,
-      answer_letters=answer_letters)
+      answer_length=answer_length)
    
 
    payload = new_game.to_dict()
@@ -75,7 +85,7 @@ def create_game(game_id):
    # serialize the response
    response = CreateGameResponseSchema().dumps(payload)
 
-   return "Game created", 201
+   return response, 201
 
 @app.route('/v1/wordle/game/<game_id>/attempt', methods=['POST'])
 def post_answer(game_id):
@@ -99,7 +109,7 @@ def post_answer(game_id):
 
    payload = {'attempt_answers': attempt_answers}
 
-   response = schemas.CreateGameResponseSchema().dumps(payload)
+   response = schemas.PostAnswerResponseSchema().dumps(payload)
 
    return response, 201
 

@@ -8,7 +8,7 @@ _fields = marshmallow.fields
 
 class CreateGameRequestSchema(marshmallow.Schema):
     user_name = _fields.String(required=True)
-    answer_letters = _fields.Int(default=5, min=5, max=8)
+    answer_length = _fields.Int(default=5, min=5, max=8)
 
 
 
@@ -28,22 +28,21 @@ class PostAnswerResponseSchema(marshmallow.Schema):
 
 class CreateGameResponseSchema(marshmallow.Schema):
     game_id = _fields.String()
-    user_id = _fields.String()
+    user_name = _fields.String()
     answer = _fields.String()
     max_attempts = _fields.Int()
 
 
 class GetGameResponseSchema(marshmallow.Schema):
     game_id = _fields.String()
-    user_id = _fields.String()
+    user_name = _fields.String()
     answer = _fields.String()
     max_attempts = _fields.Int()
     current_attempts = _fields.Int()
 
 
 class GetUserResponseSchema(marshmallow.Schema):
-    game_id = _fields.String()
     user_id = _fields.String()
-    answer = _fields.String()
-    max_attempts = _fields.Int()
-    current_attempts = _fields.Int()
+
+class GetGamesByUser(marshmallow.Schema):
+    games = _fields.List(_fields.Nested(GetGameResponseSchema))
