@@ -3,30 +3,51 @@ import flask as flask
 import logging 
 import marshmallow
 import http
+import impl.game as game
+import impl.user as user
 
 import schemas as schemas
 
 logger = logging.getLogger(__name__)
 request = flask.request
 
+GameImpl = game.GameImpl
+UserImpl = user.UserImpl
+
 CreateGameRequestSchema = schemas.CreateGameRequestSchema
 CreateGameResponseSchema = schemas.CreateGameRequestSchema
 PostAnswerRequestSchema = schemas.PostAnswerRequestSchema
 PostAnswerResponseSchema = schemas.PostAnswerResponseSchema
+GetGameResponseSchema = schemas.GetGameResponseSchema
+GetUserResponseSchema = schemas.GetUserResponseSchema
 
 Flask = flask.Flask
 
 app = Flask(__name__)
 
 @app.route('/v1/wordle/game/<game_id>', methods=['GET'])
-def get_game_info(game_id):
+def get_game(game_id: str):
    logger.info("Request made to GET 'wordle/%s'", game_id)
-   return 'Hello world'
+
+   retrieved_game = GameImpl.get_game(game_id=game_id)
+
+   payload = retrieved_game.to_dict()
+
+   response = GetGameResponseSchema.dumps(payload
+                                          )
+   return response, 200
+
 
 @app.route('/v1/wordle/user/<user_id>', methods=['GET'])
-def get_user_info(user_id):
+def get_user_info(user_id: str):
    logger.info("Request made to GET 'wordle/%s'", user_id)
-   return "User data sent", 200
+   user_info = UserImpl.get_user_info(user_id)
+
+   payload = user_info.to_dict()
+
+   response = GetUserResponseSchema.dumps(payload)
+
+   return response, 200
 
 
 @app.route('/v1/wordle/game', methods=['POST'])
@@ -41,7 +62,15 @@ def create_game(game_id):
       logger.error("invalid payload %s", exc)
       return "Invalid request payload", 400 
 
-   payload = {"game_id"}
+   user_name = data.get('user_name')
+   answer_letters = data.get('answer_letters')
+
+   new_game = GameImpl.create_game(
+      user_name=user_name,
+      answer_letters=answer_letters)
+   
+
+   payload = new_game.to_dict()
 
    # serialize the response
    response = CreateGameResponseSchema().dumps(payload)
@@ -60,9 +89,21 @@ def post_answer(game_id):
       data = PostAnswerRequestSchema().loads(request.data)
    except marshmallow.ValidationError as exc:
       logger.error("invalid payload %s", exc)
-      return "Invalid request payload", 400 
+      return "Invalid request payload", 400
    
-   return "Answer successfully processed", 201
+   attempt_word = data.get('attempt_word')
+
+   game = GameImpl.get_game(game_id)
+
+   attempt_answers = game.add_attempt(attempt_word)
+
+   payload = {'attempt_answers': attempt_answers}
+
+   response = schemas.CreateGameResponseSchema().dumps(payload)
+
+   return response, 201
 
 
 
+def get_server():
+   return app
