@@ -1,1 +1,1 @@
-Wordle REST implementation for Authentic Insurance takehome
+Wordle REST implementation in Python. Deployed using AWS.
