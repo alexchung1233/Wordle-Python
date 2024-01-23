@@ -114,7 +114,7 @@ def post_answer(game_id):
    return response, 201
 
 
-@app.route('/', methods=['POST'])
+@app.route('/', methods=['GET'])
 def healthcheck():
    logger.info("Hello check successful")
    return 200
