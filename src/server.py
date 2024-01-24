@@ -42,10 +42,11 @@ def get_game(game_id: str):
 def get_user_info(user_id: str):
    logger.info("Request made to GET 'wordle/%s'", user_id)
    user_info = UserImpl.get_user_info(user_id)
-
+   if not user_info:
+      return 'No user found', 409
    payload = user_info.to_dict()
 
-   response = GetUserResponseSchema.dumps(payload)
+   response = GetUserResponseSchema().dumps(payload)
 
    return response, 200
 
@@ -74,9 +75,11 @@ def create_game():
 
    user_name = data.get('user_name')
    answer_length = data.get('answer_length')
+   user_id = data.get('user_id')
 
    new_game = GameImpl.create_game(
       user_name=user_name,
+      user_id=user_id,
       answer_length=answer_length)
    
 

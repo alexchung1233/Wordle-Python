@@ -12,7 +12,7 @@ DBImpl = db_impl.DBImpl
 class GameImpl:
     """Wordle game class used to intialize a game"""
     def __init__(self, user_name) -> None:
-        self.game_id: str = uuid.uuid4()
+        self.game_id: str = str(uuid.uuid4())
         self.user: user.UserImpl = None
         self.max_attempts: int
         self.answer: str = ''
@@ -24,11 +24,12 @@ class GameImpl:
         """Must provide either user id or user name."""
         new_game = cls(user_name)
         if not user_id:
-            new_game.user = user.UserImpl(user_name)
+            new_game.user = user.UserImpl.create_user(user_name)
         else:
             new_game.user = user.UserImpl.get_user_info(user_id)
         new_game.max_attempts = answer_length+1
         new_game.answer = cls._get_rand_answer(answer_length)
+        new_game._write_new_game()
         return new_game
 
         # Add new game to Dynamo
@@ -46,6 +47,17 @@ class GameImpl:
         answer = words[rand_indx]['Word']
         return answer
 
+
+    def _write_new_game(self):
+        table = DBImpl.get_data_table()
+        table.put_item(Item={'UserID': self.user.user_id,
+                             'GameID': self.game_id, 
+                             'UserName': self.user.user_name,
+                             'MaxAttempts': self.max_attempts,
+                             'Answer': self.answer,
+                             'CurrentAttempts': self.current_attempts})
+
+
     @classmethod
     def get_game(cls, game_id: str):
         pass
@@ -53,6 +65,7 @@ class GameImpl:
     def to_dict(self):
         return {'game_id': self.game_id,
                 'user_name': self.user.user_name,
+                'user_id': self.user.user_id,
                 'max_attempts': self.max_attempts,
                 'answer': self.answer,
                 'current_attempts': self.current_attempts}
