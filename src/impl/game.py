@@ -1,6 +1,13 @@
 """World game class"""
 import uuid
 import impl.user as user
+import impl.db_impl as db_impl
+import random
+import boto3
+import boto3.dynamodb.conditions as conditions
+
+
+DBImpl = db_impl.DBImpl
 
 class GameImpl:
     """Wordle game class used to intialize a game"""
@@ -21,9 +28,23 @@ class GameImpl:
         else:
             new_game.user = user.UserImpl.get_user_info(user_id)
         new_game.max_attempts = answer_length+1
+        new_game.answer = cls._get_rand_answer(answer_length)
         return new_game
 
         # Add new game to Dynamo
+    
+    @classmethod
+    def _get_rand_answer(cls, answer_length: int):
+        """Get a random answer"""
+        table = DBImpl.get_dict_table()
+        response = table.scan(
+            FilterExpression=conditions.Attr('WordLength').eq(answer_length),
+            ProjectionExpression='Word'
+        )
+        words = response['Items']
+        rand_indx = random.randint(0,len(words))
+        answer = words[rand_indx]['Word']
+        return answer
 
     @classmethod
     def get_game(cls, game_id: str):
