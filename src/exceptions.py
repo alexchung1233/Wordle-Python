@@ -10,7 +10,7 @@ class DuplicateWord(Exception):
     """Wordle word already exists"""
 
 
-class InvalidWordleWord(Exception):
+class InvalidAttempt(Exception):
     """The attempted answer is an invalid wordle word"""
 
 

@@ -34,9 +34,11 @@ def get_game_info(game_id: str):
    """Get game info"""
 
    logger.info("Request made to GET 'wordle/%s'", game_id)
-
-   retrieved_game = GameImpl.get_game(game_id=game_id)
-
+   try:
+      retrieved_game = GameImpl.get_game(game_id=game_id)
+   except exceptions.GameNotFound:
+      return f"Game not found with game_id {game_id}", 404
+   
    payload = retrieved_game.to_dict()
 
    response = GetGameResponseSchema().dumps(payload)
@@ -51,7 +53,7 @@ def get_user_info(user_id: str):
    try:
       user_info = UserImpl.get_user_info(user_id)
    except exceptions.UserNotFound:
-      return 'User was not found with user_id', 409
+      return 'User was not found with user_id', 404
    
    payload = user_info.to_dict()
 
@@ -88,14 +90,16 @@ def create_game():
    user_name = data.get('user_name')
    answer_length = data.get('answer_length')
    user_id = data.get('user_id')
+   difficulty = data.get('difficulty')
 
    try:
       new_game = GameImpl.create_game(
          user_name=user_name,
          user_id=user_id,
-         answer_length=answer_length)
+         answer_length=answer_length,
+         difficulty=difficulty)
    except exceptions.UserNotFound:
-      return 'User was not found with user_id', 409
+      return 'User was not found with user_id', 404
    
    payload = new_game.to_dict()
 
@@ -120,11 +124,19 @@ def post_answer(game_id):
    
    attempt_word = data.get('attempt_word')
 
-   game = GameImpl.get_game(game_id)
+   try:
+      game = GameImpl.get_game(game_id)
+   except exceptions.GameNotFound:
+      return f"Game not found with game_id {game_id}", 404
 
-   attempt_answers = game.add_attempt(attempt_word)
+   try:
+      attempt_answer = game.add_attempt(attempt_word)
+   except exceptions.InvalidAttempt as e:
+      return f"Attempt was processed but not a valid: {e} ", 216
+   except exceptions.ExceededAttempts:
+      return "Exceeded attempts", 215
 
-   payload = {'attempt_answers': attempt_answers}
+   payload = {'attempt_answer': attempt_answer}
 
    response = schemas.PostAnswerResponseSchema().dumps(payload)
 

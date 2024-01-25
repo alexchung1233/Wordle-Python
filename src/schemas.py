@@ -10,20 +10,27 @@ class CreateGameRequestSchema(marshmallow.Schema):
     user_name = _fields.String(required=True)
     answer_length = _fields.Int(default=5, validate=validate.Range(5,9))
     user_id = _fields.String()
+    difficulty = _fields.String(
+        validate=validate.OneOf(enums.DIFFICULTY_NAMES), 
+        load_default=enums.Difficulty.EASY.name)
 
 
 class PostAnswerRequestSchema(marshmallow.Schema):
     attempt_word = _fields.String(required=True)
 
+    @marshmallow.post_load
+    def process(self, data, **kwargs):
+        data['attempt_word'] = data['attempt_word'].lower()
+        return data
 
-class AttemptAnswer(marshmallow.Schema):
+class LetterAnswer(marshmallow.Schema):
     letter = _fields.String()
     letter_answer = _fields.String(
         validate=validate.OneOf(enums.LETTER_ANSWER_NAMES)
     )
-
+        
 class PostAnswerResponseSchema(marshmallow.Schema):
-    attempt_answers = _fields.List(_fields.Nested(AttemptAnswer))
+    attempt_answer = _fields.List(_fields.Nested(LetterAnswer))
 
 
 class CreateGameResponseSchema(marshmallow.Schema):
@@ -32,7 +39,9 @@ class CreateGameResponseSchema(marshmallow.Schema):
     user_id = _fields.String()
     answer = _fields.String()
     max_attempts = _fields.Int()
-    attempts = _fields.List(_fields.Nested(AttemptAnswer))
+    has_won = _fields.Bool()
+    difficulty = _fields.String()
+    attempts = _fields.List(_fields.List(_fields.Nested(LetterAnswer)))
 
 
 class GetGameResponseSchema(marshmallow.Schema):
@@ -42,7 +51,9 @@ class GetGameResponseSchema(marshmallow.Schema):
     answer = _fields.String()
     max_attempts = _fields.Int()
     current_attempts = _fields.Int()
-    attempts = _fields.List(_fields.Nested(AttemptAnswer))
+    has_won = _fields.Bool()
+    difficulty = _fields.String()
+    attempts = _fields.List(_fields.List(_fields.Nested(LetterAnswer)))
 
 
 class GetUserResponseSchema(marshmallow.Schema):

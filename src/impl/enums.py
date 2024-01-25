@@ -5,4 +5,9 @@ class LetterAnswer(enum.Enum):
     WRONG_SPOT = 1
     INCORRECT = 2
 
-LETTER_ANSWER_NAMES = (la.name for la in LetterAnswer)
+class Difficulty(enum.Enum):
+    EASY = 0
+    HARD = 1
+
+LETTER_ANSWER_NAMES = [la.name for la in LetterAnswer]
+DIFFICULTY_NAMES = [d.name for d in Difficulty]
