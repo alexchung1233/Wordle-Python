@@ -66,6 +66,12 @@ def get_games_by_user(user_id: str):
    """GET request to retrieve games associated with user id"""
 
    logger.info("Request made to GET 'wordle/%s'", user_id)
+
+   try:
+      UserImpl.get_user_info(user_id)
+   except exceptions.UserNotFound:
+      return 'User was not found with user_id', 404
+   
    games = GameImpl.games_by_user_id(user_id)
    games_dict = []
    for g in games:

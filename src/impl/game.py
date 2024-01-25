@@ -162,7 +162,7 @@ class GameImpl:
         games = []
         for record in records:
             if record.get('GameID') == 'UserInfo':
-                break
+                continue
             game = cls._convert_db_to_object(record)
             games.append(game)
 

@@ -8,7 +8,7 @@ _fields = marshmallow.fields
 
 class CreateGameRequestSchema(marshmallow.Schema):
     user_name = _fields.String(required=True)
-    answer_length = _fields.Int(default=5, validate=validate.Range(5,9))
+    answer_length = _fields.Int(default=5, validate=validate.Range(5,8))
     user_id = _fields.String()
     difficulty = _fields.String(
         validate=validate.OneOf(enums.DIFFICULTY_NAMES), 
