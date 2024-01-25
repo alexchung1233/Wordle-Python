@@ -2,12 +2,12 @@ openapi: 3.0.2
 info:
   version: '1.0.0'
   
-  title: Authentic Insurance Wordle
+  title: Python Wordle
   
-  description: 'API Spec for the Wordle take home exam'
+  description: 'API Spec ffor Python Wordle'
 externalDocs:
   description: Github Repository Link 
-  url: 'https://github.com/alexchung1233/AuthenticInsuranceWordle'
+  url: 'https://github.com/alexchung1233/Wordle-Python'
 
 tags:
   - name: Game
