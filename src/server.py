@@ -23,6 +23,7 @@ PostAnswerResponseSchema = schemas.PostAnswerResponseSchema
 GetGameResponseSchema = schemas.GetGameResponseSchema
 GetUserResponseSchema = schemas.GetUserResponseSchema
 NewWordRequest = schemas.NewWordRequest
+GetGamesByUser = schemas.GetGamesByUser
 
 Flask = flask.Flask
 
@@ -54,14 +55,15 @@ def get_user_info(user_id: str):
 
    return response, 200
 
-@app.route('/v1/wordle/user/<user_id>', methods=['GET'])
+@app.route('/v1/wordle/user/<user_id>/games', methods=['GET'])
 def get_games_by_user(user_id: str):
    logger.info("Request made to GET 'wordle/%s'", user_id)
-   user_info = UserImpl.get_user_info(user_id)
-
-   payload = user_info.to_dict()
-
-   response = GetUserResponseSchema.dumps(payload)
+   games = GameImpl.games_by_user_id(user_id)
+   games_dict = []
+   for g in games:
+      games_dict.append(g.to_dict())
+   payload = {'games': games_dict}
+   response = GetGamesByUser().dumps(payload)
 
    return response, 200
 

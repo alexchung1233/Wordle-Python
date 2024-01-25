@@ -51,7 +51,7 @@ class GetUserResponseSchema(marshmallow.Schema):
 
 
 class GetGamesByUser(marshmallow.Schema):
-    games = _fields.List(_fields.Nested(GetGameResponseSchema))
+    games = _fields.List(_fields.Nested(GetGameResponseSchema), many=True)
 
 
 class NewWordRequest(marshmallow.Schema):

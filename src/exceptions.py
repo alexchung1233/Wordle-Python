@@ -12,3 +12,7 @@ class DuplicateWord(Exception):
 
 class InvalidWordleWord(Exception):
     """The attempted answer is an invalid wordle word"""
+
+
+class ExceededAttempts(Exception):
+    """User has exceeded attempts for game"""
