@@ -60,7 +60,7 @@ paths:
     get:
       tags:
         - User
-      summary: Create a game
+      summary: Get a game
       parameters:
         - name: user_id
           in: path
@@ -77,7 +77,8 @@ paths:
                 $ref: '#/components/schemas/GameList'
               example: # response example
                 games: [{"game_id": "06d05ecd-310b-4a79-9dea-6d5f115eb2b9", "user_id": "543d11b9-6850-4bdb-9b0f-7962e9a2b037","user_name": "Alex Chungs", "answer": "account", "max_attempts": 8, "current_attempts": 0, "attempts": []},{"game_id": "1dbc72c5-d4fb-43b3-b87d-0e02d9123a64", "user_id": "543d11b9-6850-4bdb-9b0f-7962e9a2b037", "user_name":"Alex Chungs", "answer": "signing", "max_attempts": 8, "current_attempts": 0, "attempts": []}]
-  
+        '404':
+          description: User not found
   /wordle/game: # path parameter in curly braces
     post: # documentation for POST operation for this path
       tags:
@@ -108,21 +109,26 @@ paths:
             application/json: # operation response mime type
               schema: # response schema can be specified for each response
                 $ref: '#/components/schemas/Game'
-  
+        '404':
+          description: Game not found
 
   /wordle/game/{game_id}/attempt:
     post:
       tags:
         - Game
-      summary: Echo test
-      description: Receive the exact message you've sent
+      summary: Wordle game attempt
+      description: Wordle game attempt
       responses:
         '201':
           description: Created
           content:
             application/json: # operation response mime type
               schema: # response schema can be specified for each response
-                $ref: '#/components/schemas/Game'
+                $ref: '#/components/schemas/AttemptAnswerPayload'
+        '216':
+          description: Word accepted but not in wordle dictionary
+        '404':
+          description: Game not found
       requestBody:
         content:
           application/json: # operation response mime type
@@ -133,8 +139,7 @@ paths:
     post:
       tags:
         - Dictionary
-      summary: Echo test
-      description: Receive the exact message you've sent
+      description: Add new word to wordle dictionary
       responses:
         '201':
           description: New word created
@@ -153,7 +158,7 @@ paths:
                 type: string
               examples:
                 response:
-                  value: Word already edxisys
+                  value: Word already exists
       requestBody:
         content:
           application/json: # operation response mime type
@@ -207,6 +212,20 @@ components:
       properties:
         attempt_word: 
           description: Attempt word
+          type: string
+    AttemptAnswerPayload:
+      type: object
+      properties:
+        attempt_letters:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttemptAnswer'
+    AttemptAnswer:
+      type: object
+      properties:
+        letter: 
+          type: string
+        letter_answer:
           type: string
     NewWordPayload:
       type: object
