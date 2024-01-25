@@ -31,11 +31,71 @@ class GameImpl:
             new_game.user = user.UserImpl.get_user_info(user_id)
         new_game.max_attempts = answer_length+1
         new_game.answer = cls._get_rand_answer(answer_length)
+
+        # Write the game to the DynamoDB
         new_game._write_new_game()
         return new_game
 
         # Add new game to Dynamo
+
+    @classmethod
+    def get_game(cls, game_id: str):
+        """Get game by game id"""
+        table = DBImpl.get_data_table()
+
+        response = table.scan(FilterExpression=conditions.Attr('GameID').eq(game_id))
+        if response['Items']:
+            data = response['Items'][0]
+            game = cls._convert_db_to_object(data)
+            return game
+
+        raise exceptions.GameNotFound
     
+    def to_dict(self):
+        return {'game_id': self.game_id,
+                'user_name': self.user.user_name,
+                'user_id': self.user.user_id,
+                'max_attempts': self.max_attempts,
+                'answer': self.answer,
+                'current_attempts': self.current_attempts,
+                'attempts': self.attempts}
+    
+    def add_attempt(self, attempt_word: str):
+        if self.current_attempts < self.max_attempts:
+            self.current_attempts += 1
+        else:
+            raise exceptions.ExceededAttempts
+        self._update_attempt_db()
+    
+        # Update game in dynamodb
+    
+    @classmethod
+    def games_by_user_id(cls, user_id: str):
+        """Fetch list of games by user id"""
+
+        table = DBImpl.get_data_table()
+
+        response = table.scan(FilterExpression=conditions.Attr('UserID').eq(user_id))
+        records = response['Items']
+        games = []
+        for record in records:
+            if record.get('GameID') == 'UserInfo':
+                break
+            game = cls._convert_db_to_object(record)
+            games.append(game)
+
+        return games
+    
+    def _update_attempt_db(self):
+        table = DBImpl.get_data_table()
+        expression = "set CurrentAttempts = :n"
+        attr_values = {":n": self.current_attempts}
+
+        table.update_item( Key={'UserID': self.user.user_id,
+                                'GameID': self.game_id},
+                            UpdateExpression=expression,
+                            ExpressionAttributeValues=attr_values)
+        
     @classmethod
     def _get_rand_answer(cls, answer_length: int):
         """Get a random answer"""
@@ -61,71 +121,6 @@ class GameImpl:
                              'Attempts': self.attempts})
 
 
-    @classmethod
-    def get_game(cls, game_id: str):
-        table = DBImpl.get_data_table()
-
-        response = table.scan(FilterExpression=conditions.Attr('GameID').eq(game_id))
-        if response['Items']:
-            data = response['Items'][0]
-            rtr_game = cls()
-            rtr_game.game_id = data.get('GameID')
-            rtr_game.user = user.UserImpl(user_name=data.get('UserName'), user_id=data.get('UserID'))
-            rtr_game.max_attempts = data.get('MaxAttempts')
-            rtr_game.answer = data.get('Answer')
-            rtr_game.current_attempts = data.get('CurrentAttempts')
-            rtr_game.attempts = data.get('Attempts')
-
-            return rtr_game
-
-        raise exceptions.GameNotFound
-    
-    def to_dict(self):
-        return {'game_id': self.game_id,
-                'user_name': self.user.user_name,
-                'user_id': self.user.user_id,
-                'max_attempts': self.max_attempts,
-                'answer': self.answer,
-                'current_attempts': self.current_attempts,
-                'attempts': self.attempts}
-    
-    def add_attempt(self, attempt_word: str):
-        if self.current_attempts < self.max_attempts:
-            self.current_attempts += 1
-        else:
-            raise exceptions.ExceededAttempts
-        self._update_attempt_db()
-    
-    
-    def _update_attempt_db(self):
-        table = DBImpl.get_data_table()
-        expression = "set CurrentAttempts = :n"
-        attr_values = {":n": self.current_attempts}
-
-        table.update_item( Key={'UserID': self.user.user_id,
-                             'GameID': self.game_id},
-                            UpdateExpression=expression,
-                            ExpressionAttributeValues=attr_values)
-        
-        # Update game in dynamodb
-    
-    @classmethod
-    def games_by_user_id(cls, user_id: str):
-        # Fetch list of games in dynamodb by user id
-
-        table = DBImpl.get_data_table()
-
-        response = table.scan(FilterExpression=conditions.Attr('UserID').eq(user_id))
-        records = response['Items']
-        games = []
-        for record in records:
-            if record.get('GameID') == 'UserInfo':
-                break
-            game = cls._convert_db_to_object(record)
-            games.append(game)
-            
-        return games
-    
     @classmethod
     def _convert_db_to_object(cls, data: dict):
             rtr_game = cls()

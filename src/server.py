@@ -30,7 +30,9 @@ Flask = flask.Flask
 app = Flask(__name__)
 
 @app.route('/v1/wordle/game/<game_id>', methods=['GET'])
-def get_game(game_id: str):
+def get_game_info(game_id: str):
+   """Get game info"""
+
    logger.info("Request made to GET 'wordle/%s'", game_id)
 
    retrieved_game = GameImpl.get_game(game_id=game_id)
@@ -43,6 +45,8 @@ def get_game(game_id: str):
 
 @app.route('/v1/wordle/user/<user_id>', methods=['GET'])
 def get_user_info(user_id: str):
+   """Get user info"""
+
    logger.info("Request made to GET 'wordle/%s'", user_id)
    try:
       user_info = UserImpl.get_user_info(user_id)
@@ -57,6 +61,8 @@ def get_user_info(user_id: str):
 
 @app.route('/v1/wordle/user/<user_id>/games', methods=['GET'])
 def get_games_by_user(user_id: str):
+   """GET request to retrieve games associated with user id"""
+
    logger.info("Request made to GET 'wordle/%s'", user_id)
    games = GameImpl.games_by_user_id(user_id)
    games_dict = []
