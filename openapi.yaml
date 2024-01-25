@@ -56,7 +56,7 @@ paths:
                 user_name: John Doe
         '404':
           description: User not found
-  /wordle/user/{user_id}/games:
+  '/wordle/user/{user_id}/games':
     get:
       tags:
         - User
@@ -79,7 +79,7 @@ paths:
                 games: [{"game_id": "06d05ecd-310b-4a79-9dea-6d5f115eb2b9", "user_id": "543d11b9-6850-4bdb-9b0f-7962e9a2b037","user_name": "Alex Chungs", "answer": "account", "max_attempts": 8, "current_attempts": 0, "attempts": []},{"game_id": "1dbc72c5-d4fb-43b3-b87d-0e02d9123a64", "user_id": "543d11b9-6850-4bdb-9b0f-7962e9a2b037", "user_name":"Alex Chungs", "answer": "signing", "max_attempts": 8, "current_attempts": 0, "attempts": []}]
         '404':
           description: User not found
-  /wordle/game: # path parameter in curly braces
+  '/wordle/game': # path parameter in curly braces
     post: # documentation for POST operation for this path
       tags:
         - Game
@@ -97,7 +97,13 @@ paths:
             schema: # response schema can be specified for each response
               $ref: '#/components/schemas/CreateGamePayload'
         required: true
-  /wordle/game/{game_id}: # path parameter in curly braces
+  '/wordle/game/{game_id}':
+    parameters:
+    - name: game_id
+      in: path
+      schema: 
+        type: string
+      required: true
     get:
       tags:
         - Game
@@ -113,6 +119,12 @@ paths:
           description: Game not found
 
   /wordle/game/{game_id}/attempt:
+    parameters:
+      - name: game_id
+        in: path
+        schema: 
+          type: string
+        required: true
     post:
       tags:
         - Game
@@ -135,7 +147,7 @@ paths:
             schema: # response schema can be specified for each response
               $ref: '#/components/schemas/AttemptPayload'
         required: true
-  /wordle/dictionary:
+  '/wordle/dictionary':
     post:
       tags:
         - Dictionary
@@ -197,6 +209,9 @@ components:
           type: string
         attempts:
           type: array
+          items:
+            $ref: '#/components/schemas/AttemptAnswer'
+
         current_attempts:
           type: integer
     User:
@@ -221,6 +236,10 @@ components:
           items:
             $ref: '#/components/schemas/AttemptAnswer'
     AttemptAnswer:
+      type: array
+      items:
+        $ref: '#/components/schemas/LetterAnswer'
+    LetterAnswer:
       type: object
       properties:
         letter: 
