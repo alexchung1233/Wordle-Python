@@ -17,7 +17,7 @@ tags:
   - name: Dictionary
     description: Operations about for the dictionary
 servers:
-  - url: 'http://3.19.243.218:80/v1/wordle'
+  - url: 'http:/ec2-3-19-243-218.us-east-2.compute.amazonaws.com/v1/wordle'
 
 paths:
   '/wordle/user/{user_id}': # path parameter in curly braces
@@ -207,6 +207,10 @@ components:
           type: string
         max_attempts:
           type: string
+        has_won: 
+          type: boolean
+        difficulty:
+           $ref: '#/components/schemas/Difficulty'
         attempts:
           type: array
           items:
@@ -231,7 +235,7 @@ components:
     AttemptAnswerPayload:
       type: object
       properties:
-        attempt_letters:
+        attempt_letter:
           type: array
           items:
             $ref: '#/components/schemas/AttemptAnswer'
