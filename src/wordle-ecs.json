@@ -1,7 +1,0 @@
-{
-    "cluster": "my-cluster2",
-    "serviceName": "wordle",
-    "taskDefinition": "wordle-td",
-
-    "desiredCount": 1
-}
