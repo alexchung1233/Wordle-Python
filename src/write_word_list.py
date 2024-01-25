@@ -26,7 +26,7 @@ def write(words):
             count = 1
             for word, word_length in words:
                 print(f'{count}: Writing word {word}')
-                writer.put_item(Item={'WordID': str(uuid.uuid4()), 'Word': word, 'WordLength': word_length})
+                writer.put_item(Item={'Word': word, 'WordLength': word_length})
                 count +=1
     except botocore.exceptions.ClientError as err:
         logger.error(
@@ -36,11 +36,6 @@ def write(words):
             err.response["Error"]["Message"],
         )
         raise
-
-
-    dynamodb = session.resource('dynamodb', 'us-east-2')
-    table = dynamodb.Table('wordle-dictionary')
-    table.put_item(Item={"WordleWord":"hello", "WordLength": 5})
 
 def main():
     Lem = WordNetLemmatizer()

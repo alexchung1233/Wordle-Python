@@ -32,6 +32,7 @@ class CreateGameResponseSchema(marshmallow.Schema):
     user_id = _fields.String()
     answer = _fields.String()
     max_attempts = _fields.Int()
+    attempts = _fields.List(_fields.Nested(AttemptAnswer))
 
 
 class GetGameResponseSchema(marshmallow.Schema):
@@ -41,11 +42,24 @@ class GetGameResponseSchema(marshmallow.Schema):
     answer = _fields.String()
     max_attempts = _fields.Int()
     current_attempts = _fields.Int()
+    attempts = _fields.List(_fields.Nested(AttemptAnswer))
 
 
 class GetUserResponseSchema(marshmallow.Schema):
     user_id = _fields.String()
     user_name = _fields.String()
 
+
 class GetGamesByUser(marshmallow.Schema):
     games = _fields.List(_fields.Nested(GetGameResponseSchema))
+
+
+class NewWordRequest(marshmallow.Schema):
+    word = _fields.String()
+
+    @marshmallow.post_load(pass_many=True)
+    def check_length(self, data, many, **kwargs):
+        if data:
+            if len(data['word']) < 5 or len(data['word']) > 9:
+                raise marshmallow.ValidationError("New wordle word must be at least 5 and less than 9 characters long.")
+        return data

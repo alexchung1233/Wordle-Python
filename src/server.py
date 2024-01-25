@@ -6,6 +6,7 @@ import marshmallow
 
 import impl.game as game
 import impl.user as user
+import impl.dictionary as dictionary
 import schemas as schemas
 import exceptions as exceptions
 
@@ -21,6 +22,7 @@ PostAnswerRequestSchema = schemas.PostAnswerRequestSchema
 PostAnswerResponseSchema = schemas.PostAnswerResponseSchema
 GetGameResponseSchema = schemas.GetGameResponseSchema
 GetUserResponseSchema = schemas.GetUserResponseSchema
+NewWordRequest = schemas.NewWordRequest
 
 Flask = flask.Flask
 
@@ -120,16 +122,28 @@ def post_answer(game_id):
 
    return response, 201
 
+@app.route('/v1/wordle/dictionary', methods=['POST'])
+def post_new_word():
+   if not request.data:
+      return "invalid request payload", 400
+   # Validate the request during deserialization 
+   try:
+      data = NewWordRequest().loads(request.data)
+   except marshmallow.ValidationError as exc:
+      logger.error("invalid payload %s", exc)
+      return f"Invalid request payload: {exc}", 400 
+   word = data.get('word')
+   try:
+      dictionary.DictionaryImpl.add_word(word=word)
+   except exceptions.DuplicateWord:
+      return "Word already exists in dictionary", 409
 
-   @app.route('/v1/wordle/dictionary', methods=['POST'])
-   def post_new_word(game_id):
-      pass
+   return 'New word added successfully', 201
 
 @app.route('/', methods=['GET'])
 def healthcheck():
    logger.info("Hello check successful")
    return 'health check good', 200
-
 
 
 def get_server():

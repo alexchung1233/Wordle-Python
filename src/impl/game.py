@@ -18,6 +18,7 @@ class GameImpl:
         self.max_attempts: int
         self.answer: str = ''
         self.current_attempts: int = 0
+        self.attempts: list = []
     
 
     @classmethod
@@ -56,7 +57,8 @@ class GameImpl:
                              'UserName': self.user.user_name,
                              'MaxAttempts': self.max_attempts,
                              'Answer': self.answer,
-                             'CurrentAttempts': self.current_attempts})
+                             'CurrentAttempts': self.current_attempts,
+                             'Attempts': self.attempts})
 
 
     @classmethod
@@ -72,6 +74,7 @@ class GameImpl:
             rtr_game.max_attempts = data.get('MaxAttempts')
             rtr_game.answer = data.get('Answer')
             rtr_game.current_attempts = data.get('CurrentAttempts')
+            rtr_game.attempts = data.get('Attempts')
 
             return rtr_game
 
@@ -83,11 +86,18 @@ class GameImpl:
                 'user_id': self.user.user_id,
                 'max_attempts': self.max_attempts,
                 'answer': self.answer,
-                'current_attempts': self.current_attempts}
+                'current_attempts': self.current_attempts,
+                'attempts': self.attempts}
     
     def add_attempt(self, attempt_word: str):
         if self.current_attempts < self.max_attempts:
             self.current_attempts += 1
+    
+    def _create_attempt():
+        pass
+    
+    def _update_db():
+        pass
         
         # Update game in dynamodb
     
