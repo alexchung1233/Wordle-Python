@@ -1,11 +1,7 @@
 import boto3
-import botocore
-import os 
 import random
-from nltk.stem.wordnet import WordNetLemmatizer
 import logging
 import boto3.dynamodb.conditions as conditions
-from decimal import Decimal
 logger = logging.getLogger()
 
 session = boto3.Session()

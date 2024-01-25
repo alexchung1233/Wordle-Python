@@ -1,5 +1,6 @@
 import uuid
 import impl.db_impl as db_impl
+import exceptions
 import botocore
 import boto3.dynamodb.conditions as conditions
 
@@ -30,6 +31,7 @@ class UserImpl:
         if response['Items']:
             data = response['Items']
             return cls(user_name=data[0].get('UserName'), user_id=data[0].get('UserID'))
+        raise exceptions.UserNotFound
 
     def to_dict(self):
         return {'user_id': self.user_id,

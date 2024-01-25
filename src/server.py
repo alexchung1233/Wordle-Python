@@ -7,6 +7,7 @@ import marshmallow
 import impl.game as game
 import impl.user as user
 import schemas as schemas
+import exceptions as exceptions
 
 logger = logging.getLogger(__name__)
 request = flask.request
@@ -33,17 +34,18 @@ def get_game(game_id: str):
 
    payload = retrieved_game.to_dict()
 
-   response = GetGameResponseSchema.dumps(payload
-                                          )
+   response = GetGameResponseSchema().dumps(payload)
    return response, 200
 
 
 @app.route('/v1/wordle/user/<user_id>', methods=['GET'])
 def get_user_info(user_id: str):
    logger.info("Request made to GET 'wordle/%s'", user_id)
-   user_info = UserImpl.get_user_info(user_id)
-   if not user_info:
-      return 'No user found', 409
+   try:
+      user_info = UserImpl.get_user_info(user_id)
+   except exceptions.UserNotFound:
+      return 'User was not found with user_id', 409
+   
    payload = user_info.to_dict()
 
    response = GetUserResponseSchema().dumps(payload)
@@ -71,18 +73,20 @@ def create_game():
       data = CreateGameRequestSchema().loads(request.data)
    except marshmallow.ValidationError as exc:
       logger.error("invalid payload %s", exc)
-      return "Invalid request payload", 400 
+      return f"Invalid request payload: {exc}", 400 
 
    user_name = data.get('user_name')
    answer_length = data.get('answer_length')
    user_id = data.get('user_id')
 
-   new_game = GameImpl.create_game(
-      user_name=user_name,
-      user_id=user_id,
-      answer_length=answer_length)
+   try:
+      new_game = GameImpl.create_game(
+         user_name=user_name,
+         user_id=user_id,
+         answer_length=answer_length)
+   except exceptions.UserNotFound:
+      return 'User was not found with user_id', 409
    
-
    payload = new_game.to_dict()
 
    # serialize the response
@@ -102,7 +106,7 @@ def post_answer(game_id):
       data = PostAnswerRequestSchema().loads(request.data)
    except marshmallow.ValidationError as exc:
       logger.error("invalid payload %s", exc)
-      return "Invalid request payload", 400
+      return f"Invalid request payload: {exc}", 400 
    
    attempt_word = data.get('attempt_word')
 
@@ -116,6 +120,10 @@ def post_answer(game_id):
 
    return response, 201
 
+
+   @app.route('/v1/wordle/dictionary', methods=['POST'])
+   def post_new_word(game_id):
+      pass
 
 @app.route('/', methods=['GET'])
 def healthcheck():
