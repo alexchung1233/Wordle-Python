@@ -138,7 +138,7 @@ paths:
               schema: # response schema can be specified for each response
                 $ref: '#/components/schemas/AttemptAnswerPayload'
         '216':
-          description: Word accepted but not in wordle dictionary
+          description: Attempt accepted but not in dictionary, not right size, or does not adhere to Hard difficulty rules
         '404':
           description: Game not found
       requestBody:
@@ -245,9 +245,20 @@ components:
         letter: 
           type: string
         letter_answer:
-          type: string
+          $ref: '#/components/schemas/LetterAnswerEnum'
     NewWordPayload:
       type: object
       properties:
         word:
           type: string
+    Difficulty:
+      type: string
+      enum:
+        - EASY
+        - HARD
+    LetterAnswerEnum:
+      type: string
+      enum:
+        - CORRECT
+        - WRONG_SPOT
+        - INCORRECT
