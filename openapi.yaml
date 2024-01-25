@@ -4,7 +4,7 @@ info:
   
   title: Python Wordle
   
-  description: 'API Spec ffor Python Wordle'
+  description: 'API Spec for Python Wordle'
 externalDocs:
   description: Github Repository Link 
   url: 'https://github.com/alexchung1233/Wordle-Python'
@@ -14,8 +14,10 @@ tags:
     description: Operations about user
   - name: User
     description: Operations about a game
+  - name: Dictionary
+    description: Operations about for the dictionary
 servers:
-  - url: 'http://localhost:5000/v1/wordle'
+  - url: 'http://3.19.243.218:80/v1/wordle'
 
 paths:
   '/wordle/user/{user_id}': # path parameter in curly braces
@@ -32,35 +34,16 @@ paths:
         - User
       
       # summary is up to 120 symbold but we recommend to be shortest as possible
-      summary: Get user by user name
-      
-      # you can use GFM in operation description too: https://guides.github.com/features/mastering-markdown
-      description: |
-        Some description of the operation. 
-        You can use `markdown` here.
-      
-      # operationId should be unique across the whole specification
-      operationId: getUserByName
-      
+      summary: Get user by user id
+            
       # list of parameters for the operation
       parameters:
-        - name: username
+        - name: user_id
           in: path
-          description: The name that needs to be fetched
+          description: The user associated
           required: true
           schema:
             type: string
-        - name: with_email
-          in: query
-          description: Filter users without email
-          schema:
-            type: boolean
-      
-      # security schemas applied to this operation
-      security:
-        - main_auth:
-            - 'read:users' # for oauth2 provide list of scopes here
-        - api_key: []
       responses: # list of responses
         '200':
           description: Success
@@ -69,94 +52,63 @@ paths:
               schema: # response schema can be specified for each response
                 $ref: '#/components/schemas/User'
               example: # response example
-                username: user1
-                email: user@example.com
-        '403':
-          description: Forbidden
+                user_id: 543d11b9-6850-4bdb-9b0f-7962e9a2b037
+                user_name: John Doe
         '404':
           description: User not found
-    post:
+  /wordle/user/{user_id}/games:
+    get:
       tags:
         - User
-      summary: Updated user
-      description: This can only be done by the logged in user.
-      operationId: updateUser
+      summary: Create a game
       parameters:
-        - name: username
+        - name: user_id
           in: path
-          description: The name that needs to be updated
+          description: The user associated
           required: true
           schema:
             type: string
-      security:
-        - main_auth:
-            - 'write:users'
       responses:
         '200':
-          description: OK
-        '400':
-          description: Invalid user supplied
-        '404':
-          description: User not found
-      # request body documentation
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/User'
-        description: Updated user object
-        required: true
+          description: Success
+          content:
+            application/json: # operation response mime type
+              schema: # response schema can be specified for each response
+                $ref: '#/components/schemas/GameList'
+              example: # response example
+                games: [{"game_id": "06d05ecd-310b-4a79-9dea-6d5f115eb2b9", "user_id": "543d11b9-6850-4bdb-9b0f-7962e9a2b037","user_name": "Alex Chungs", "answer": "account", "max_attempts": 8, "current_attempts": 0, "attempts": []},{"game_id": "1dbc72c5-d4fb-43b3-b87d-0e02d9123a64", "user_id": "543d11b9-6850-4bdb-9b0f-7962e9a2b037", "user_name":"Alex Chungs", "answer": "signing", "max_attempts": 8, "current_attempts": 0, "attempts": []}]
+  
   /wordle/game: # path parameter in curly braces
     post: # documentation for POST operation for this path
       tags:
         - Game
-      summary: Echo test
-      description: Receive the exact message you've sent
-      operationId: echo
-      security:
-        - api_key: []
-        - basic_auth: []
+      summary: Create a game
       responses:
-        '200':
-          description: OK
-          # document headers for this response
-          headers:
-            X-Rate-Limit: # Header name
-              description: calls per hour allowed by the user
-              schema: # Header schema
-                type: integer
-                format: int32
-            X-Expires-After:
-              $ref: '#/components/headers/ExpiresAfter'
+        '201':
+          description: Created
           content:
-            application/json:
-              schema:
-                type: string
-              examples:
-                response:
-                  value: Hello world!
-            application/xml:
-              schema:
-                type: string
-            text/csv:
-              schema:
-                type: string
+            application/json: # operation response mime type
+              schema: # response schema can be specified for each response
+                $ref: '#/components/schemas/Game'
       requestBody:
         content:
-          application/json:
-            schema:
-              type: string
-              example: Hello world!
-          application/xml:
-            schema:
-              type: string
-              example: Hello world!
-        description: Echo payload
+          application/json: # operation response mime type
+            schema: # response schema can be specified for each response
+              $ref: '#/components/schemas/CreateGamePayload'
         required: true
-        
+  /wordle/game/{game_id}: # path parameter in curly braces
+    get:
+      tags:
+        - Game
+      summary: Get a game
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json: # operation response mime type
+              schema: # response schema can be specified for each response
+                $ref: '#/components/schemas/Game'
+  
 
   /wordle/game/{game_id}/attempt:
     post:
@@ -164,97 +116,100 @@ paths:
         - Game
       summary: Echo test
       description: Receive the exact message you've sent
-      operationId: echo
-      security:
-        - api_key: []
-        - basic_auth: []
       responses:
-        '200':
-          description: OK
-          # document headers for this response
-          headers:
-            X-Rate-Limit: # Header name
-              description: calls per hour allowed by the user
-              schema: # Header schema
-                type: integer
-                format: int32
-            X-Expires-After:
-              $ref: '#/components/headers/ExpiresAfter'
+        '201':
+          description: Created
+          content:
+            application/json: # operation response mime type
+              schema: # response schema can be specified for each response
+                $ref: '#/components/schemas/Game'
+      requestBody:
+        content:
+          application/json: # operation response mime type
+            schema: # response schema can be specified for each response
+              $ref: '#/components/schemas/AttemptPayload'
+        required: true
+  /wordle/dictionary:
+    post:
+      tags:
+        - Dictionary
+      summary: Echo test
+      description: Receive the exact message you've sent
+      responses:
+        '201':
+          description: New word created
           content:
             application/json:
               schema:
                 type: string
               examples:
                 response:
-                  value: Hello world!
-            application/xml:
+                  value: New word added successfully
+        '409':
+          description: Conflict
+          content:
+            application/json:
               schema:
                 type: string
-            text/csv:
-              schema:
-                type: string
+              examples:
+                response:
+                  value: Word already edxisys
       requestBody:
         content:
-          application/json:
-            schema:
-              type: string
-              example: Hello world!
-          application/xml:
-            schema:
-              type: string
-              example: Hello world!
-        description: Echo payload
+          application/json: # operation response mime type
+            schema: # response schema can be specified for each response
+              $ref: '#/components/schemas/NewWordPayload'
         required: true
-        
+
 components:
   schemas:
-    Email:
-      description: User email address
-      type: string
-      format: test
-      example: john.smith@example.com
+    GameList:
+      type: object
+      properties:
+        games:
+          type: array
+          items:
+            $ref: '#/components/schemas/Game'
+    CreateGamePayload:
+      type: object
+      properties:
+        user_name:
+          type: string
+        answer_length:
+          type: integer
+        user_id:
+          type: string
+    Game:
+      type: object
+      properties:
+        game_id:
+          type: string
+        user_id:
+          type: string
+        user_name: 
+          type: string
+        max_attempts:
+          type: string
+        attempts:
+          type: array
+        current_attempts:
+          type: integer
     User:
       type: object
       properties:
-        username:
+        user_name:
           description: User supplied username
           type: string
-          minLength: 4
-          example: John78
-        firstName:
-          description: User first name
+        user_id:
           type: string
-          minLength: 1
-          example: John
-        lastName:
-          description: User last name
+    AttemptPayload:
+      type: object
+      properties:
+        attempt_word: 
+          description: Attempt word
           type: string
-          minLength: 1
-          example: Smith
-        email:
-          $ref: '#/components/schemas/Email'
-  headers:
-    ExpiresAfter:
-      description: date in UTC when token expires
-      schema:
-        type: string
-        format: date-time
-  # Security scheme definitions that can be used across the definition.
-  securitySchemes:
-    main_auth: # security definition name (you can name it as you want)
-      # the following options are specific to oauth2 type
-      type: oauth2 # authorization type, one of: oauth2, apiKey, http
-      flows:
-        implicit:
-          authorizationUrl: 'http://example.com/api/oauth/dialog'
-          scopes:
-            'read:users': read users info
-            'write:users': modify or remove users
-    api_key:  # security definition name (you can name it as you want)
-      type: apiKey 
-      # The following options are specific to apiKey type
-      in: header # Where API key will be passed: header or query
-      name: api_key # API key parameter name
-    basic_auth: # security definition name (you can name it as you want)
-      type: http
-      scheme: basic
+    NewWordPayload:
+      type: object
+      properties:
+        word:
+          type: string
