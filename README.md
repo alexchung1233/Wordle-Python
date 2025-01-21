@@ -1,4 +1,4 @@
-Wordle REST implementation in Python.
+Wordle REST implementation in Python. To practice Flask, Dynamodb, and AWS
 
 **Technologies used:**
 Built with Flask, Dynamodb, and Marshmallow for data serialization/deserialization. Built image using Docker and uploaded to an ECR repository.  Deployed to a AWS EC2 instance.
